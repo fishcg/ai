@@ -106,7 +106,7 @@ router.get('/models', async (ctx) => {
 app.use(router.routes()).use(router.allowedMethods());
 
 // 启动服务器
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3128;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
