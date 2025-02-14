@@ -1,39 +1,10 @@
-const axios = require('axios');
-
-const { config } = require('./config.js');
-
-const appId = config.bailianAppID; // 百炼 app_id
-
-async function CallDashScope(apiKey, message) {
-  const url = `https://dashscope.aliyuncs.com/api/v1/apps/${appId}/completion`;
-  const data = {
-    input: {
-      prompt: message
-    },
-    parameters: {
-      'incremental_output' : 'true' // 增量输出
-    },
-    debug: {}
-  };
-  try {
-    const response = await axios.post(url, data, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'X-DashScope-SSE': 'enable' // 流式输出
-      },
-      responseType: 'stream' // 用于处理流式响应
-    });
-    if (response.status === 200) {
-      return response
-    } else {
-      throw new Error("Request failed:");
-    }
-  } catch (error) {
-    throw error
-  }
-}
-
+/**
+ * 截取指定子字符串之后的部分
+ *
+ * @param inputString
+ * @param substring
+ * @returns {string}
+ */
 function extractDataAfterSubstring(inputString, substring) {
   // 找到指定子字符串在主字符串中的位置
   const index = inputString.indexOf(substring);
@@ -47,6 +18,12 @@ function extractDataAfterSubstring(inputString, substring) {
   return '';
 }
 
+/**
+ * 转换 OpenAI API 返回的数据
+ *
+ * @param input
+ * @returns {{created: *, usage: *, model: *, id: string, choices: [{finish_reason: (*|"stop"|"length"|"tool_calls"|"content_filter"|"function_call"), delta: {content: *}, index: number, logprobs: null}], system_fingerprint: null, object: string}}
+ */
 function transformOpenAIData(input) {
   const outputText = input.output.text;
   const modelId = input.usage.models[0].model_id;
@@ -78,7 +55,6 @@ function transformOpenAIData(input) {
 }
 
 module.exports = {
-  CallDashScope,
   extractDataAfterSubstring,
   transformOpenAIData,
 };

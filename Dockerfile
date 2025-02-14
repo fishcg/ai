@@ -9,10 +9,8 @@ RUN npm config set registry https://registry.npm.taobao.org \
 
 COPY . .
 
-RUN chmod +x ./entrypoint.sh \
-    && mkdir .runtime \
-    && chmod -R a+w .runtime
-
 USER root
+
+RUN chmod +x ./entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]

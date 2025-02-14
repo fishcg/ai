@@ -1,5 +1,6 @@
 const config = {
-  bailianAppId: 'your-bailian-app-id',
+  port: 3128,
+  bailianAppID: 'your-bailian-app-id',
 }
 
 module.exports = {
