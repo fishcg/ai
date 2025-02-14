@@ -1,0 +1,7 @@
+const config = {
+  bailianAppId: 'your-bailian-app-id',
+}
+
+module.exports = {
+  config,
+};
