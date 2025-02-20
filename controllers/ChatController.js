@@ -35,23 +35,19 @@ chatRouter.post('/chat/completions', async (ctx) => {
 chatRouter.get('/models', async (ctx) => {
   ctx.response.type = 'application/json';
   let now = Math.floor(Date.now() / 1000);
+  let data = []
+  for (let modelName of config.models) {
+    data.push({
+      'id': modelName,
+      'object': "model",
+      'created': now,
+      'owned_by': modelName,
+    })
+  }
   ctx.body = {
-    "object": "list",
-    "data": [
-      {
-        "id": "info",
-        "object": "model",
-        "created": now,
-        "owned_by": "fish"
-      },
-      {
-        "id": "deepseek-r1",
-        "object": "model",
-        "created": now,
-        "owned_by": "deepseek"
-      },
-    ],
-  };
+    'object': 'list',
+    'data': data,
+  }
 });
 
 module.exports = {

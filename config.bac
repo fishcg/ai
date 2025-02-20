@@ -1,6 +1,7 @@
 const config = {
   port: 3128,
   bailianAppID: 'your-bailian-app-id',
+  models: ['info', 'deepseek-r1', 'qwen-plus-latest'], // model to be used
 }
 
 module.exports = {
