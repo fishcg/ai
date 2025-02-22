@@ -1,5 +1,6 @@
 const config = {
   port: 3128,
+  httpProxy: 'http://proxy.test.com:2333', // 网络代理，需要访问 Open AI 接口时可配置
   bailianAppID: 'your-bailian-app-id',
   models: ['info', 'deepseek-r1', 'qwen-plus-latest'], // model to be used
 }

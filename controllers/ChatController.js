@@ -18,17 +18,26 @@ chatRouter.post('/chat/completions', async (ctx) => {
     ctx.set('Content-Type', 'text/event-stream');
     ctx.set('Cache-Control', 'no-cache');
     ctx.set('Connection', 'keep-alive');
-    const { model, messages, temperature, top_p } = ctx.request.body;
+    const { model, messages } = ctx.request.body;
+    let reqBody = ctx.request.body
+    if (!model) {
+      reqBody['model'] = 'gpt-4o'
+    }
+    let url = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+    if (reqBody['model'] === 'gpt-4o') {
+      url = 'https://api.openai.com/v1' //https://api.openai.com/v1/chat/completions
+    }
     if (model === 'info') {
       let bailianApp = new BailianApp(apiKey, config.bailianAppID)
       await bailianApp.create(ctx, messages.at(-1).content)
     } else {
-      await OpenaiCompatible.create(ctx, apiKey, model, messages, temperature, top_p)
+      await OpenaiCompatible.create(ctx, apiKey, url, reqBody)
     }
   } catch (error) {
     ctx.status = 500;
-    ctx.body = { error: 'Internal server error' };
-    console.log(error)
+    ctx.body = 'Internal server error: ' +  error.toString();
+    console.log(ctx.body);
+    ctx.res.end();
   }
 })
 

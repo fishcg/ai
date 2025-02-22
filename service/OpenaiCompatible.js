@@ -1,24 +1,34 @@
 const OpenAI = require("openai");
+const fetch = require('node-fetch');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+const { config } = require('../config.js');
 
-async function create(ctx, apiKey, model, messages, temperature, top_p) {
+async function create(ctx, apiKey, url, params, proxyUrl) {
+  // 设置代理
+  const agent = new HttpsProxyAgent(config.httpProxy);
+  const customFetch = (url, options) => {
+    return fetch(url, { ...options, agent });
+  };
+
   const openai = new OpenAI({
     apiKey: apiKey,
-    baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    baseURL: url,
+    timeout: 20000,
+    fetch: customFetch, // 使用自定义的 fetch
   });
-  const completion = await openai.chat.completions.create({
-    model: model,
-    messages: messages,
-    temperature: temperature,
-    top_p: top_p,
-    stream: true,
-  });
+  try {
+    const completion = await openai.chat.completions.create(params);
+    ctx.status = 200;
 
-  ctx.status = 200;
-  // 将 OpenAI 的流数据通过 EventStream 格式发送给客户端
-  for await (const chunk of completion) {
-    ctx.res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+    // TODO: 支持非流式输出 stream: false
+    for await (const chunk of completion) {
+      ctx.res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+    }
+  } catch (error) {
+    throw new Error('request OpenAI request fail:' + error.toString());
+  } finally {
+    ctx.res.end();
   }
-  ctx.res.end();
 }
 
 module.exports = {
