@@ -4,8 +4,7 @@ WORKDIR /home/www/ai
 
 COPY package.json entrypoint.sh ./
 
-RUN npm config set registry https://registry.npm.taobao.org \
-    && npm install
+RUN npm install
 
 COPY . .
 

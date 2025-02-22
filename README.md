@@ -12,7 +12,7 @@
 docker build -t ai-info:0.0.1 .
 ```
 
-- `-t ai-info:0.0.3` 为镜像指定名称 `ai-info` 和版本号 `0.0.1`。
+- `-t ai-info:0.0.1` 为镜像指定名称 `ai-info` 和版本号 `0.0.1`。
 - `.` 表示 Dockerfile 位于当前目录。
 
 ### 2. 运行 Docker 容器
@@ -20,14 +20,14 @@ docker build -t ai-info:0.0.1 .
 在构建完成后，运行以下命令启动 Docker 容器：
 
 ```bash
-docker run --name ai-info -d -p 3128:3128 -v /home/www/ai/config.js:/home/www/ai/config.js ai-info:0.0.3 web
+docker run --name ai-info -d -p 3128:3128 -v /home/www/ai/config.js:/home/www/ai/config.js ai-info:0.0.1 web
 ```
 
 - `--name ai-info` 为容器指定名称 `ai-info`。
 - `-d` 表示后台运行容器。
 - `-p 3128:3128` 将主机的 3128 端口映射到容器的 3128 端口。
 - `-v /home/www/ai/config.js:/home/www/ai/config.js` 挂载主机上的配置文件至容器内相同路径。
-- `ai-info:0.0.3 web` 指定要运行的镜像版本和初始命令。
+- `ai-info:0.0.1 web` 指定要运行的镜像版本和初始命令。
 
 ### 3. 测试是否安装成功
 
