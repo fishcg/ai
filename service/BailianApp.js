@@ -1,6 +1,7 @@
 const axios = require('axios');
 
-const {extractDataAfterSubstring, transformOpenAIData} = require("../util");
+const { extractDataAfterSubstring, transformOpenAIData } = require("../util");
+const { Apm } = require("./Apm");
 
 class BailianApp {
   constructor(apiKey, appID) {
@@ -69,7 +70,11 @@ class BailianApp {
             dataJson = transformOpenAIData(dataJson);
             ctx.res.write(`data:${JSON.stringify(dataJson)}\n\n`);
           } catch (error) {
-            console.error("Unexpected error:", error);
+            Apm.captureError(error, {
+              custom: {
+                catalog: error.toString(),
+              }
+            });
           }
         }
       });

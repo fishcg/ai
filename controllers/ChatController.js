@@ -4,6 +4,7 @@ const { config } = require('../config.js');
 const { extractDataAfterSubstring } = require("../util");
 const { BailianApp } = require("../service/BailianApp");
 const OpenaiCompatible = require('../service/OpenaiCompatible.js');
+const { Apm } = require('../service/Apm.js');
 
 const chatRouter = new Router()
 
@@ -36,7 +37,11 @@ chatRouter.post('/chat/completions', async (ctx) => {
   } catch (error) {
     ctx.status = 500;
     ctx.body = 'Internal server error: ' +  error.toString();
-    console.log(ctx.body);
+    Apm.captureError(error, {
+      custom: {
+        catalog: error.toString(),
+      }
+    });
     ctx.res.end();
   }
 })
