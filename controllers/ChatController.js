@@ -18,13 +18,12 @@ chatRouter.post('/chat/completions', async (ctx) => {
   try {
     ctx.set('Cache-Control', 'no-cache');
     ctx.set('Connection', 'keep-alive');
-    // ctx.set('Content-Type', 'text/event-stream');
     let reqBody = ctx.request.body
     if (!reqBody['model']) {
       reqBody['model'] = 'gpt-4o'
     }
     let url = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
-    if (reqBody['model'] === 'gpt-4o') {
+    if (reqBody['model'] === 'gpt-4o' || reqBody['model'] === 'gpt-4o-mini') {
       url = 'https://api.openai.com/v1'
     }
     if (reqBody['model'] === 'info' || reqBody['model'] === 'code') {
