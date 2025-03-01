@@ -18,43 +18,6 @@ function extractDataAfterSubstring(inputString, substring) {
   return '';
 }
 
-/**
- * 转换 OpenAI API 返回的数据
- *
- * @param input
- * @returns {{created: *, usage: *, model: *, id: string, choices: [{finish_reason: (*|"stop"|"length"|"tool_calls"|"content_filter"|"function_call"), delta: {content: *}, index: number, logprobs: null}], system_fingerprint: null, object: string}}
- */
-function transformOpenAIData(input) {
-  const outputText = input.output.text;
-  const modelId = input.usage.models[0].model_id;
-  const requestId = input.request_id;
-  const finish_reason = input.output.finish_reason;
-  const usage = input.usage;
-  const created = input.created;
-
-  const transformedData = {
-    choices: [
-      {
-        delta: {
-          content: outputText
-        },
-        finish_reason: finish_reason,
-        index: 0,
-        logprobs: null
-      }
-    ],
-    object: "chat.completion.chunk",
-    usage: usage,
-    created: created,
-    system_fingerprint: null,
-    model: modelId,
-    id: `chatcmpl-${requestId}`
-  };
-
-  return transformedData;
-}
-
 module.exports = {
   extractDataAfterSubstring,
-  transformOpenAIData,
 };

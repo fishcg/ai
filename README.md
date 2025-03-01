@@ -9,7 +9,7 @@
 在项目的根目录下执行以下命令，以构建 Docker 镜像：
 
 ```bash
-docker build -t ai-info:0.0.1 .
+docker build -t ai-info:0.0.5 .
 ```
 
 - `-t ai-info:0.0.1` 为镜像指定名称 `ai-info` 和版本号 `0.0.1`。

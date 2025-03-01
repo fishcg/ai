@@ -16,33 +16,35 @@ chatRouter.post('/chat/completions', async (ctx) => {
   }
   let apiKey = extractDataAfterSubstring(ctx.request.headers.authorization, 'Bearer ')
   try {
-    ctx.set('Content-Type', 'text/event-stream');
     ctx.set('Cache-Control', 'no-cache');
     ctx.set('Connection', 'keep-alive');
-    const { model, messages } = ctx.request.body;
+    // ctx.set('Content-Type', 'text/event-stream');
     let reqBody = ctx.request.body
-    if (!model) {
+    if (!reqBody['model']) {
       reqBody['model'] = 'gpt-4o'
     }
     let url = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
     if (reqBody['model'] === 'gpt-4o') {
-      url = 'https://api.openai.com/v1' //https://api.openai.com/v1/chat/completions
+      url = 'https://api.openai.com/v1'
     }
-    if (model === 'info') {
-      let bailianApp = new BailianApp(apiKey, config.bailianAppID)
-      await bailianApp.create(ctx, messages.at(-1).content)
+    if (reqBody['model'] === 'info' || reqBody['model'] === 'code') {
+      let appID = config.bailianAppID
+      if (reqBody['model'] === 'code') {
+        appID = config.bailianCodeAppID
+      }
+      let bailianApp = new BailianApp(apiKey, appID)
+      await bailianApp.create(ctx, reqBody)
     } else {
       await OpenaiCompatible.create(ctx, apiKey, url, reqBody)
     }
   } catch (error) {
-    ctx.status = 500;
-    ctx.body = 'Internal server error: ' +  error.toString();
     Apm.captureError(error, {
       custom: {
         catalog: error.toString(),
       }
     });
-    ctx.res.end();
+    ctx.status = 500;
+    ctx.body = 'Internal server error: ' +  error.toString();
   }
 })
 

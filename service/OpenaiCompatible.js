@@ -3,31 +3,48 @@ const fetch = require('node-fetch');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const { config } = require('../config.js');
 
-async function create(ctx, apiKey, url, params, proxyUrl) {
+async function create(ctx, apiKey, url, params) {
   // 设置代理
-  const agent = new HttpsProxyAgent(config.httpProxy);
-  const customFetch = (url, options) => {
-    return fetch(url, { ...options, agent });
-  };
-
+  let customFetch = null
+  if (config.httpProxy) {
+    const agent = new HttpsProxyAgent(config.httpProxy);
+    customFetch = (url, options) => {
+      return fetch(url, { ...options, agent });
+    };
+  }
   const openai = new OpenAI({
     apiKey: apiKey,
     baseURL: url,
-    timeout: 20000,
+    timeout: 10000,
     fetch: customFetch, // 使用自定义的 fetch
   });
-  try {
-    const completion = await openai.chat.completions.create(params);
-    ctx.status = 200;
 
+  try {
+    let completion = null
+    if (url.includes('openai') && !params['messages']) {
+      // api: /v1/completions
+      // 对于这个接口，仅支持 GTP-3.5 相关模型，这儿先写死
+      params['model'] = 'gpt-3.5-turbo-instruct'
+      completion = await openai.completions.create(params);
+    } else {
+      // api: /v1/chat/completions
+      completion = await openai.chat.completions.create(params);
+    }
+    ctx.status = 200;
+    if (!params['stream']) {
+      ctx.set('Content-Type', 'application/json');
+      ctx.body = completion
+      return
+    }
     // TODO: 支持非流式输出 stream: false
+    ctx.set('Content-Type', 'text/event-stream');
     for await (const chunk of completion) {
+      // console.log(`data: ${JSON.stringify(chunk)}\n\n`)
       ctx.res.write(`data: ${JSON.stringify(chunk)}\n\n`);
     }
-  } catch (error) {
-    throw new Error('request OpenAI request fail:' + error.toString());
-  } finally {
     ctx.res.end();
+  } catch (error) {
+    throw new Error(`request OpenAI api ${url} fail: ${error.toString()}`);
   }
 }
 
