@@ -140,9 +140,16 @@ function transformOpenAIData(input) {
   const outputText = input.output.text;
   const modelId = input.usage.models[0].model_id;
   const requestId = input.request_id;
-  const finish_reason = input.output.finish_reason;
   const usage = input.usage;
-  const created = input.created;
+  let created = input.created;
+  let finish_reason = input.output.finish_reason;
+
+  if (!created) {
+    created = Math.floor(Date.now() / 1000);
+  }
+  if (finish_reason === "null") {
+    finish_reason = null
+  }
 
   const transformedData = {
     choices: [
