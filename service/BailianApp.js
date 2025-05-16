@@ -2,6 +2,8 @@ const axios = require('axios');
 
 const { extractDataAfterSubstring } = require("../util");
 const { Apm } = require("./Apm");
+const { config } = require('../config.js');
+
 
 class BailianApp {
   constructor(apiKey, appID) {
@@ -43,6 +45,7 @@ class BailianApp {
         'Content-Type': 'application/json',
         'X-DashScope-SSE': 'enable' // 流式输出
       },
+      timeout: config.timeout,
       responseType: 'stream' // 用于处理流式响应
     });
     if (response.status === 200) {

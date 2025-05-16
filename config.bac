@@ -6,6 +6,7 @@ const config = {
   bailianCodeAppID: 'your-bailian-code--app-id',
   models: ['info', 'deepseek-r1', 'qwen-plus-latest'], // model to be used
   enableCORS: true, // 是否允许跨域请求，如 Cursor 等应用的请求需要开启
+  timeout: 15000, // 网络请求超时时间，单位：ms
 }
 
 module.exports = {

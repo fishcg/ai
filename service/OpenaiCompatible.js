@@ -15,7 +15,7 @@ async function create(ctx, apiKey, url, params) {
   const openai = new OpenAI({
     apiKey: apiKey,
     baseURL: url,
-    timeout: 10000,
+    timeout: config.timeout,
     fetch: customFetch, // 使用自定义的 fetch
   });
 
