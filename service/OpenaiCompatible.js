@@ -6,7 +6,7 @@ const { config } = require('../config.js');
 async function create(ctx, apiKey, url, params) {
   // 设置代理
   let customFetch = null
-  if (config.httpProxy) {
+  if (params['model'].startsWith('gpt') && config.httpProxy) {
     const agent = new HttpsProxyAgent(config.httpProxy);
     customFetch = (url, options) => {
       return fetch(url, { ...options, agent });
