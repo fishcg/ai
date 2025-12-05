@@ -32,8 +32,10 @@ async function create(ctx, apiKey, url, params) {
     }
     ctx.status = 200;
     if (!params['stream']) {
+      console.log('not stream')
       ctx.set('Content-Type', 'application/json');
       ctx.body = completion
+      // ctx.res.end();
       return
     }
     // TODO: 支持非流式输出 stream: false

@@ -26,10 +26,12 @@ chatRouter.post('/chat/completions', async (ctx) => {
     if (reqBody['model'] === 'gpt-4o' || reqBody['model'] === 'gpt-4o-mini') {
       url = 'https://api.openai.com/v1'
     }
-    if (reqBody['model'] === 'info' || reqBody['model'] === 'code') {
+    if (reqBody['model'] === 'info' || reqBody['model'] === 'code' || reqBody['model'] === 'metrics') {
       let appID = config.bailianAppID
       if (reqBody['model'] === 'code') {
         appID = config.bailianCodeAppID
+      } else if (reqBody['model'] === 'metrics') {
+        appID = config.bailianMetricsAppID
       }
       let bailianApp = new BailianApp(apiKey, appID)
       await bailianApp.create(ctx, reqBody)

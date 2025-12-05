@@ -12,8 +12,17 @@ class BailianApp {
   }
 
   async create(ctx, params) {
+    if (params['model'] === 'metrics') {
+      // 特殊模型不做流式输出
+      ctx.set('Content-Type', 'application/json');
+      let resp = await this.request(this.apiKey, params, false)
+      ctx.status = 200;
+      ctx.body = resp.data;
+      return
+    }
+    // 流式输出
     ctx.set('Content-Type', 'text/event-stream');
-    let resp = await this.request(this.apiKey, params)
+    let resp = await this.request(this.apiKey, params, true)
     ctx.status = 200;
     let isCodeCompletion = params['model'] === 'code'
     await this.streamWrite(ctx, resp, isCodeCompletion)
@@ -24,10 +33,11 @@ class BailianApp {
    *
    * @param apiKey
    * @param params
+   * @param incremental_output 是否增量输出
    * @returns 百炼 App 接口响应
    * @constructor
    */
-  async request(apiKey, params) {
+  async request(apiKey, params, incremental_output) {
     const url = `https://dashscope.aliyuncs.com/api/v1/apps/${this.appID}/completion`;
     const data = {
       // input: {
@@ -35,19 +45,22 @@ class BailianApp {
       // },
       input: params,
       parameters: {
-        'incremental_output' : 'true' // 增量输出
+        'incremental_output' : incremental_output // 增量输出
       },
       debug: {}
     };
-    const response = await axios.post(url, data, {
+    let postOptions = {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'X-DashScope-SSE': 'enable' // 流式输出
       },
       timeout: config.timeout,
-      responseType: 'stream' // 用于处理流式响应
-    });
+    }
+    if (incremental_output) {
+      postOptions['responseType']['X-DashScope-SSE'] = 'enable' // 流式输出
+      postOptions['responseType'] = 'stream' // 用于处理流式响应
+    }
+    const response = await axios.post(url, data, postOptions);
     if (response.status === 200) {
       return response
     } else {
