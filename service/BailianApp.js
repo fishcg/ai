@@ -57,7 +57,7 @@ class BailianApp {
       timeout: config.timeout,
     }
     if (incremental_output) {
-      postOptions['responseType']['X-DashScope-SSE'] = 'enable' // 流式输出
+      postOptions['headers']['X-DashScope-SSE'] = 'enable' // 流式输出
       postOptions['responseType'] = 'stream' // 用于处理流式响应
     }
     const response = await axios.post(url, data, postOptions);
