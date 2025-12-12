@@ -12,7 +12,7 @@ class BailianApp {
   }
 
   async create(ctx, params) {
-    if (params['model'] === 'metrics') {
+    if (params['model'] === 'metrics' || params['stream'] === false) {
       // 特殊模型不做流式输出
       ctx.set('Content-Type', 'application/json');
       let resp = await this.request(this.apiKey, params, false)

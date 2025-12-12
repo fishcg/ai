@@ -1,0 +1,14 @@
+# Git 相关
+.git
+.gitignore
+.github
+
+# IDE 相关
+.idea
+.vscode
+*.swp
+*.swo
+
+# 测试和临时文件
+*/runtime/
+config.js

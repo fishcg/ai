@@ -5,6 +5,9 @@ const { extractDataAfterSubstring } = require("../util");
 const { BailianApp } = require("../service/BailianApp");
 const OpenaiCompatible = require('../service/OpenaiCompatible.js');
 const { Apm } = require('../service/Apm.js');
+const nedb = require('../component/Nedb')
+const TokenCounter = require('../component/Token')
+
 
 const chatRouter = new Router()
 
@@ -14,7 +17,7 @@ chatRouter.post('/chat/completions', async (ctx) => {
     ctx.body = { error: 'Unauthorized' };
     return;
   }
-  let apiKey = extractDataAfterSubstring(ctx.request.headers.authorization, 'Bearer ')
+  let userApiKey = extractDataAfterSubstring(ctx.request.headers.authorization, 'Bearer ')
   try {
     ctx.set('Cache-Control', 'no-cache');
     ctx.set('Connection', 'keep-alive');
@@ -26,6 +29,8 @@ chatRouter.post('/chat/completions', async (ctx) => {
     if (reqBody['model'] === 'gpt-4o' || reqBody['model'] === 'gpt-4o-mini') {
       url = 'https://api.openai.com/v1'
     }
+    let messageToken = await TokenCounter.countMessages(reqBody['messages'], reqBody['model'])
+    let apiKey = await getTrulyApikey(reqBody['model'], userApiKey, messageToken)
     if (reqBody['model'] === 'info' || reqBody['model'] === 'code' || reqBody['model'] === 'metrics') {
       let appID = config.bailianAppID
       if (reqBody['model'] === 'code') {
@@ -38,6 +43,13 @@ chatRouter.post('/chat/completions', async (ctx) => {
     } else {
       await OpenaiCompatible.create(ctx, apiKey, url, reqBody)
     }
+    let token = 0
+    if (reqBody['model'] === 'info') {
+      token = ctx.body.usage.models[0]['input_tokens'] + ctx.body.usage.models[0]['output_tokens']
+    } else {
+      token = ctx.body.usage.total_tokens
+    }
+    nedb.incr(userApiKey, token)
   } catch (error) {
     Apm.captureError(error, {
       custom: {
@@ -48,6 +60,31 @@ chatRouter.post('/chat/completions', async (ctx) => {
     ctx.body = 'Internal server error: ' +  error.toString();
   }
 })
+
+/**
+ * 获取真正的 apikey（处理 me- 前缀的限额逻辑）
+ *
+ * @param model
+ * @param apiKey
+ * @param messageToken
+ * @returns {string|*}
+ */
+async function getTrulyApikey(model, apiKey, messageToken) {
+  if (!apiKey.startsWith('me-')) {
+    // 非 me- 前缀默认放过
+    return apiKey
+  }
+  if (config.apiKeyList.indexOf(apiKey) === -1) {
+    throw new Error('Apikey not found')
+  }
+  let tokenUsed = await nedb.get(apiKey)
+  let currentToken = config.daily_token_limit - tokenUsed - messageToken
+  if (currentToken < 0) {
+    throw new Error('No tokens left for today')
+  }
+  return config.bailianApiKey
+}
+
 
 chatRouter.get('/models', async (ctx) => {
   ctx.response.type = 'application/json';
@@ -64,6 +101,26 @@ chatRouter.get('/models', async (ctx) => {
   ctx.body = {
     'object': 'list',
     'data': data,
+  }
+});
+
+chatRouter.post('/token', async (ctx) => {
+  if (!ctx.request.headers.authorization) {
+    ctx.status = 401;
+    ctx.body = { error: 'Unauthorized' };
+    return;
+  }
+  let userApiKey = extractDataAfterSubstring(ctx.request.headers.authorization, 'Bearer ')
+  ctx.response.type = 'application/json';
+  let currentToken = 0
+  try {
+    let tokenUsed = await nedb.get(userApiKey)
+    currentToken = config.daily_token_limit - tokenUsed
+  } catch (e) {
+    currentToken = 0
+  }
+  ctx.body = {
+    'token': currentToken,
   }
 });
 
