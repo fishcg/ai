@@ -43,13 +43,16 @@ chatRouter.post('/chat/completions', async (ctx) => {
     } else {
       await OpenaiCompatible.create(ctx, apiKey, url, reqBody)
     }
-    let token = 0
-    if (reqBody['model'] === 'info') {
-      token = ctx.body.usage.models[0]['input_tokens'] + ctx.body.usage.models[0]['output_tokens']
-    } else {
-      token = ctx.body.usage.total_tokens
+    if (ctx.body) {
+      // TODO: 流式请求也需要计费
+      let token = 0
+      if (reqBody['model'] === 'info') {
+        token = ctx.body.usage.models[0]['input_tokens'] + ctx.body.usage.models[0]['output_tokens']
+      } else {
+        token = ctx.body.usage.total_tokens
+      }
+      nedb.incr(userApiKey, token)
     }
-    nedb.incr(userApiKey, token)
   } catch (error) {
     Apm.captureError(error, {
       custom: {

@@ -2,11 +2,16 @@ const config = {
   port: 3128,
   httpProxy: 'http://proxy.test.com:2333', // 网络代理，需要访问 Open AI 接口时可配置
   apmHost: 'http://apm.test.com:8200', // APM 接口地址，需要使用 APM 记录错误时配置
+  bailianApiKey: 'your-bailian-api-key',
   bailianAppID: 'your-bailian-app-id',
   bailianCodeAppID: 'your-bailian-code--app-id',
   models: ['info', 'deepseek-r1', 'qwen-plus-latest'], // model to be used
   enableCORS: true, // 是否允许跨域请求，如 Cursor 等应用的请求需要开启
   timeout: 15000, // 网络请求超时时间，单位：ms
+  daily_token_limit: 100000,
+    apiKeyList: [
+      'me-testabc'
+    ]
 }
 
 module.exports = {
