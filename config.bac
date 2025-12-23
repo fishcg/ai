@@ -5,6 +5,8 @@ const config = {
   bailianApiKey: 'your-bailian-api-key',
   bailianAppID: 'your-bailian-app-id',
   bailianCodeAppID: 'your-bailian-code--app-id',
+  bailianCrAppID: 'your-bailian-cr-app-id',
+  bailianMetricsAppID: 'your-bailian-metrics-app-id', // 监控
   models: ['info', 'deepseek-r1', 'qwen-plus-latest'], // model to be used
   enableCORS: true, // 是否允许跨域请求，如 Cursor 等应用的请求需要开启
   timeout: 15000, // 网络请求超时时间，单位：ms

@@ -31,12 +31,14 @@ chatRouter.post('/chat/completions', async (ctx) => {
     }
     let messageToken = await TokenCounter.countMessages(reqBody['messages'], reqBody['model'])
     let apiKey = await getTrulyApikey(reqBody['model'], userApiKey, messageToken)
-    if (reqBody['model'] === 'info' || reqBody['model'] === 'code' || reqBody['model'] === 'metrics') {
+    if (reqBody['model'] === 'info' || reqBody['model'] === 'code' || reqBody['model'] === 'metrics' || reqBody['model'] === 'cr') {
       let appID = config.bailianAppID
       if (reqBody['model'] === 'code') {
         appID = config.bailianCodeAppID
       } else if (reqBody['model'] === 'metrics') {
         appID = config.bailianMetricsAppID
+      } else if (reqBody['model'] === 'cr') {
+        appID = config.bailianCrAppID
       }
       let bailianApp = new BailianApp(apiKey, appID)
       await bailianApp.create(ctx, reqBody)
@@ -46,7 +48,7 @@ chatRouter.post('/chat/completions', async (ctx) => {
     if (ctx.body) {
       // TODO: 流式请求也需要计费
       let token = 0
-      if (reqBody['model'] === 'info') {
+      if (reqBody['model'] === 'info' || reqBody['model'] === 'cr') {
         token = ctx.body.usage.models[0]['input_tokens'] + ctx.body.usage.models[0]['output_tokens']
       } else {
         token = ctx.body.usage.total_tokens
@@ -114,14 +116,19 @@ chatRouter.post('/token', async (ctx) => {
     return;
   }
   let userApiKey = extractDataAfterSubstring(ctx.request.headers.authorization, 'Bearer ')
-  ctx.response.type = 'application/json';
-  let currentToken = 0
-  try {
-    let tokenUsed = await nedb.get(userApiKey)
-    currentToken = config.daily_token_limit - tokenUsed
-  } catch (e) {
-    currentToken = 0
+  if (!userApiKey.startsWith('me-')) {
+    // 非 me- 前缀默认放过
+    return 999999
+  } else {
+    ctx.response.type = 'application/json';
+    try {
+      let tokenUsed = await nedb.get(userApiKey)
+      currentToken = config.daily_token_limit - tokenUsed
+    } catch (e) {
+      currentToken = 0
+    }
   }
+
   ctx.body = {
     'token': currentToken,
   }
