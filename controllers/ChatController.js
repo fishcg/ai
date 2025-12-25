@@ -26,7 +26,7 @@ chatRouter.post('/chat/completions', async (ctx) => {
       reqBody['model'] = 'gpt-4o'
     }
     let url = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
-    if (reqBody['model'] === 'gpt-4o' || reqBody['model'] === 'gpt-4o-mini') {
+    if (reqBody['model'].startsWith('gpt')) {
       url = 'https://api.openai.com/v1'
     }
     let messageToken = await TokenCounter.countMessages(reqBody['messages'], reqBody['model'])
@@ -87,7 +87,7 @@ async function getTrulyApikey(model, apiKey, messageToken) {
   if (currentToken < 0) {
     throw new Error('No tokens left for today')
   }
-  return config.bailianApiKey
+  return model.startsWith('gpt') ? config.openAIApiKey : config.bailianApiKey
 }
 
 

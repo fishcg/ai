@@ -2,6 +2,7 @@ const config = {
   port: 3128,
   httpProxy: 'http://proxy.test.com:2333', // 网络代理，需要访问 Open AI 接口时可配置
   apmHost: 'http://apm.test.com:8200', // APM 接口地址，需要使用 APM 记录错误时配置
+  openAIApiKey: 'your-openai-api-key',
   bailianApiKey: 'your-bailian-api-key',
   bailianAppID: 'your-bailian-app-id',
   bailianCodeAppID: 'your-bailian-code--app-id',
