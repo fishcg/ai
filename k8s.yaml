@@ -34,7 +34,7 @@ spec:
             ["start"]
           volumeMounts:
             - name: config
-              mountPath: /home/www/ai-info/config.js
+              mountPath: /home/www/ai/config.js
               subPath: config.js
           ports:
             - containerPort: 3128
