@@ -80,7 +80,8 @@ async function getTrulyApikey(model, apiKey, messageToken) {
     return apiKey
   }
   if (config.apiKeyList.indexOf(apiKey) === -1) {
-    throw new Error('Apikey not found')
+    return apiKey
+    // throw new Error('Apikey not found')
   }
   let tokenUsed = await nedb.get(apiKey)
   let currentToken = config.daily_token_limit - tokenUsed - messageToken
