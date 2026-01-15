@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-info-service
+spec:
+  type: NodePort
+  ports:
+    - name: web
+      port: 3128
+      targetPort: 3128
+      nodePort: 30028
+  selector:
+    app: ai-info
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-info
+spec:
+  selector:
+    matchLabels:
+      app: ai-info
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ai-info
+    spec:
+      containers:
+        - name: ai-info
+          image: 172.24.173.77:30500/ai-info:0.0.1
+          imagePullPolicy: IfNotPresent
+          args:
+            ["start"]
+          volumeMounts:
+            - name: config
+              mountPath: /home/www/ai-info/config.js
+              subPath: config.js
+          ports:
+            - containerPort: 3128
+          env:
+            - name: TZ
+              value: 'Asia/Shanghai'
+      volumes:
+        - name: config
+          configMap:
+            name: ai-info-cfg
+            items:
+              - key: config.js
+                path: config.js
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ai-info-cfg
+  labels:
+    app: ai-info
+data:
+  config.js: |
+    const config = {
+      port: 3128,
+      bailianAppID: 'test',
+      bailianCodeAppID: 'test',
+      bailianMetricsAppID: 'test',
+      models: ['deepseek-r1', 'qwen-plus-latest'], // model to be used
+      apmHost: 'http://172.17.0.1:8200', // APM 接口地址，需要使用 APM 记录错误时配置i
+      enableCORS: true,
+      timeout: 60000,
+    }
+      
+    module.exports = {
+      config,
+    };
