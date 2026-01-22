@@ -42,7 +42,6 @@ async function create(ctx, apiKey, url, params) {
     // TODO: 支持非流式输出 stream: false
     ctx.set('Content-Type', 'text/event-stream');
     for await (const chunk of completion) {
-      // console.log(`data: ${JSON.stringify(chunk)}\n\n`)
       ctx.res.write(`data: ${JSON.stringify(chunk)}\n\n`);
     }
     ctx.res.end();
