@@ -1,0 +1,44 @@
+clone:
+  git:
+    image: 172.24.173.77:30500/woodpecker-git:latest
+    settings:
+      # 【关键1】禁用部分克隆 (partial clone)，改为浅克隆 (depth 1)
+      # 部分克隆在国内网络环境下非常容易断流
+      partial: false
+      depth: 1
+      # 增加重试次数
+      tags: true
+    environment:
+      - https_proxy=http://172.24.173.76:7899
+      - http_proxy=http://172.24.173.76:7899
+      - no_proxy=localhost,127.0.0.1,10.42.0.0/16,10.43.0.0/16,172.24.173.77
+steps:
+  build-and-push:
+    image: 172.24.173.77:30500/standard-docker:latest
+    privileged: true
+
+    settings:
+      # 这里的配置和 woodpecker 插件完全通用
+      registry: http://172.24.173.77:30500
+      repo: 172.24.173.77:30500/ai-info
+      tags:
+        - latest
+        - ${CI_COMMIT_SHA:0:7}
+      insecure: true
+      # 这个插件很简单，不需要 driver_opts
+      # 如果需要构建参数：
+      build_args:
+        - http_proxy=http://172.24.173.76:7899
+        - https_proxy=http://172.24.173.76:7899
+        - no_proxy=localhost,127.0.0.1,172.24.173.77,10.42.0.0/16,10.43.0.0/16
+    when:
+      event: [push, tag]
+  update-k8s-deployment:
+    image: 172.24.173.77:30500/bitnami-kubectl:latest
+    environment:
+      KUBECONFIG: /woodpecker/kubeconfig
+    commands:
+      # 【关键】更新 Deployment 的镜像字段
+      - kubectl set image deployment/ai-info ai-info=172.24.173.77:30500/ai-info:${CI_COMMIT_SHA:0:7} --namespace=default
+    when:
+      event: [push, tag]

@@ -1,5 +1,6 @@
 const OpenAI = require("openai");
-const fetch = require('node-fetch');
+const nodeFetch = require('node-fetch');
+const fetch = nodeFetch.default || nodeFetch;
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const { config } = require('../config.js');
 
@@ -7,6 +8,7 @@ async function create(ctx, apiKey, url, params) {
   // 设置代理
   let customFetch = null
   if (params['model'].startsWith('gpt') && config.httpProxy) {
+    console.log('http proxy for OpenAI')
     const agent = new HttpsProxyAgent(config.httpProxy);
     customFetch = (url, options) => {
       return fetch(url, { ...options, agent });
@@ -40,7 +42,6 @@ async function create(ctx, apiKey, url, params) {
     // TODO: 支持非流式输出 stream: false
     ctx.set('Content-Type', 'text/event-stream');
     for await (const chunk of completion) {
-      // console.log(`data: ${JSON.stringify(chunk)}\n\n`)
       ctx.res.write(`data: ${JSON.stringify(chunk)}\n\n`);
     }
     ctx.res.end();
