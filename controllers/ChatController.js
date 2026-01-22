@@ -55,7 +55,7 @@ chatRouter.post('/chat/completions', async (ctx) => {
         token = ctx.body.usage.total_tokens
       }
       // console.log(`User API Key: ${userApiKey}, Tokens used: ${token}, time: ${new Date().toISOString()}`)
-     console.log(ctx.body.choices[0].message.content)
+      // console.log(ctx.body.choices[0].message.content)
       nedb.incr(userApiKey, token)
     }
   } catch (error) {
