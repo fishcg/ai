@@ -12,6 +12,7 @@ const TokenCounter = require('../component/Token')
 const chatRouter = new Router()
 
 chatRouter.post('/chat/completions', async (ctx) => {
+  console.log('Received /chat/completions request, time:', new Date().toISOString());
   if (!ctx.request.headers.authorization) {
     ctx.status = 401;
     ctx.body = { error: 'Unauthorized' };
@@ -53,6 +54,8 @@ chatRouter.post('/chat/completions', async (ctx) => {
       } else {
         token = ctx.body.usage.total_tokens
       }
+      // console.log(`User API Key: ${userApiKey}, Tokens used: ${token}, time: ${new Date().toISOString()}`)
+     console.log(ctx.body.choices[0].message.content)
       nedb.incr(userApiKey, token)
     }
   } catch (error) {
